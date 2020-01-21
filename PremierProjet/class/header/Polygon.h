@@ -1,8 +1,16 @@
 #pragma once
-#include "Point.h";
+#include <vector>
 
-class Polygon {
+#include "Segment.h";
+#include "abstract/Figure.h"
+
+class Polygon: public Figure {
 private:
-	Point points[];
+	vector<Segment *> segments;
 public:
+	void AddSegment(Segment *seg);
+	void DrawFigure();
+	void ClosePolygon();
+
+	bool CheckValidPolygon();
 };

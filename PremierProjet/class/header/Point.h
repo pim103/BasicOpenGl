@@ -1,8 +1,10 @@
 #pragma once
 class Point {
 private:
-	int x;
-	int y;
+	float x;
+	float y;
 public:
-	Point(int newX, int newY);
+	Point(float newX, float newY);
+	float getX();
+	float getY();
 };

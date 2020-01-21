@@ -2,6 +2,10 @@
 using namespace std;
 
 #include "../../class/header/Screen.h"
+#include "../../class/header/Segment.h"
+#include "../../class/header/Controller.h"
+
+vector<Figure*> figureToDraw;
 
 Screen::Screen(int width, int height, string windowTitle) {
 	/* Initialize the library */
@@ -36,7 +40,7 @@ void Screen::Display() {
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
 
-	glClearColor(1.f, 1.f, 0.f, 1.f);
+	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Desactive le "scissoring"
@@ -44,24 +48,10 @@ void Screen::Display() {
 	// Defini le viewport en pleine fenetre
 	glViewport(0, 0, width, height);
 
-	// Idem mais en OpenGL moderne
-	// defini une liste de sommets, 2D, de type float
-	const float triangles[] = {
-		-0.5f, -0.5f,
-		-0.5f, +0.5f,
-		+0.5f, +0.5f,
-		// second triangle
-		-0.5f, -0.5f,
-		+0.5f, +0.5f,
-		+0.5f, -0.5f
-	};
-
-	// Specifie la structure des donnees envoyees au GPU
-	glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), triangles);
-	// indique que les donnees sont sous forme de tableau
-	glEnableVertexAttribArray(0);
-	// dessine deux triangles
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+	for each (Figure * figure in figureToDraw)
+	{
+		figure->DrawFigure();
+	}
 }
 
 void Screen::Shutdown() {
@@ -71,6 +61,9 @@ void Screen::Shutdown() {
 void Screen::InitializeAndLaunch() {
 	// toutes nos initialisations vont ici
 	Initialize();
+
+	Controller *controller = new Controller();
+	controller->SetCallback(window);
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))

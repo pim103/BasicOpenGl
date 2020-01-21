@@ -1,9 +1,14 @@
 #pragma once
 #include <iostream>
+using namespace std;
+
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-using namespace std;
+
+#include <vector>
+#include "abstract/Figure.h";
+#include "Segment.h";
 
 class Screen {
 private:

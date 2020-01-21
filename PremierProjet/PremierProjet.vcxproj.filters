@@ -24,9 +24,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="..\common\GLShader.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="class\header\Screen.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -39,15 +36,21 @@
     <ClInclude Include="class\header\Polygon.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="class\header\abstract\Figure.h">
+      <Filter>Fichiers sources</Filter>
+    </ClInclude>
+    <ClInclude Include="class\header\Segment.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="class\header\Controller.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="PremierProjet.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="..\common\GLShader.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="class\lib\Screen.cpp">
@@ -60,6 +63,15 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="class\lib\Point.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="class\lib\abstract\Figure.cpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClCompile>
+    <ClCompile Include="class\lib\Segment.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="class\lib\Controller.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
