@@ -1,4 +1,5 @@
 #include "../../class/header/Polygon.h"
+#include "../../class/header/Screen.h"
 
 void Polygon::AddSegment(Segment* seg) {
 	segments.push_back(seg);
@@ -16,9 +17,12 @@ void Polygon::ClosePolygon() {
 
 	if (segmentsSize != 0) {
 		Point* firstPoint = segments[0]->getFirstPoint();
-		Point* lastPoint = segments[segmentsSize - 1]->getSecondPoint();
+		Point* lastPoint = segments[(segmentsSize - 1)]->getSecondPoint();
 
-		segments.push_back(new Segment(firstPoint, lastPoint));
+		Segment * newSeg = new Segment(firstPoint, lastPoint);
+		newSeg->SetColor(segments[0]->GetColors());
+
+		segments.push_back(newSeg);
 	}
 }
 

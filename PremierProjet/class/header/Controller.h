@@ -5,7 +5,8 @@
 
 enum ControllerType {
 	DRAW_SEGMENT,
-	DRAW_POLYGON
+	DRAW_POLYGON,
+	DRAW_WINDOW
 };
 
 class Controller {

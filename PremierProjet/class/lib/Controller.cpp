@@ -1,10 +1,12 @@
 #include "../../class/header/Controller.h"
 #include "../../class/header/Screen.h"
 #include "../../class/header/Polygon.h"
+#include "../../class/header/Window.h"
 
 extern vector<Figure*> figureToDraw;
 ControllerType controllerType;
 
+extern Window* windowAlgo;
 Polygon* newPolygon = nullptr;
 
 float newXa = -2;
@@ -33,26 +35,50 @@ void Controller::MouseButtonCallback(GLFWwindow* window, int button, int action,
 		else {
 			switch (controllerType)
 			{
+			case ControllerType::DRAW_WINDOW:
 			case ControllerType::DRAW_POLYGON:
 				if (newPolygon != nullptr) {
-					newPolygon->AddSegment(new Segment(newXa, newYa, x, y));
+					Segment* newSeg = new Segment(newXa, newYa, x, y);
+					if (controllerType == ControllerType::DRAW_WINDOW) {
+						newSeg->SetColor(0.0, 0.0, 1.0);
+					}
+					else if (controllerType == ControllerType::DRAW_POLYGON) {
+						newSeg->SetColor(0.0, 1.0, 0.0);
+					}
+
+					newPolygon->AddSegment(newSeg);
 					newXa = x;
 					newYa = y;
 				}
 				else {
 					newPolygon = new Polygon();
-					figureToDraw.push_back(newPolygon);
-					newPolygon->AddSegment(new Segment(newXa, newYa, x, y));
+					if (controllerType == ControllerType::DRAW_POLYGON) {
+						figureToDraw.push_back(newPolygon);
+					}
+					else if (controllerType == ControllerType::DRAW_WINDOW) {
+						windowAlgo->SetPolygon(newPolygon);
+					}
+
+					Segment* newSeg = new Segment(newXa, newYa, x, y);
+					if (controllerType == ControllerType::DRAW_WINDOW) {
+						newSeg->SetColor(0.0, 0.0, 1.0);
+					}
+					else if (controllerType == ControllerType::DRAW_POLYGON) {
+						newSeg->SetColor(0.0, 1.0, 0.0);
+					}
+
+					newPolygon->AddSegment(newSeg);
 					newXa = x;
 					newYa = y;
 				}
 				break;
 			case ControllerType::DRAW_SEGMENT:
-				figureToDraw.push_back(new Segment(newXa, newYa, x, y));
+				Segment* newSeg = new Segment(newXa, newYa, x, y);
+				newSeg->SetColor(1.0, 0.0, 0.0);
+
+				figureToDraw.push_back(newSeg);
 				newXa = -2;
 				newYa = -2;
-				break;
-			default:
 				break;
 			}
 		}
@@ -73,11 +99,14 @@ void Controller::KeyboardCallback(GLFWwindow* window, int key, int scancode, int
 			SwitchMode();
 			controllerType = ControllerType::DRAW_SEGMENT;
 			break;
+		case GLFW_KEY_F:
+			cout << "Window mode" << endl;
+			SwitchMode();
+			controllerType = ControllerType::DRAW_WINDOW;
+			break;
 		case GLFW_KEY_C:
-			if (controllerType == ControllerType::DRAW_POLYGON) {
-				cout << "Close Polygon" << endl;
-				SwitchMode();
-			}
+			cout << "Close Polygon" << endl;
+			SwitchMode();
 			break;
 		default:
 			break;
@@ -93,6 +122,18 @@ void Controller::SwitchMode() {
 			newPolygon->ClosePolygon();
 			newPolygon->CheckValidPolygon();
 		}
+		newXa = -2;
+		newYa = -2;
+		newPolygon = nullptr;
+		break;
+	case ControllerType::DRAW_WINDOW:
+		if (newPolygon != nullptr) {
+			newPolygon->ClosePolygon();
+			if (!newPolygon->CheckValidPolygon()) {
+				windowAlgo->RemovePolygon();
+			}
+		}
+
 		newXa = -2;
 		newYa = -2;
 		newPolygon = nullptr;

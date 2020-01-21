@@ -4,8 +4,10 @@ using namespace std;
 #include "../../class/header/Screen.h"
 #include "../../class/header/Segment.h"
 #include "../../class/header/Controller.h"
+#include "../../class/header/Window.h"
 
 vector<Figure*> figureToDraw;
+Window* windowAlgo;
 
 Screen::Screen(int width, int height, string windowTitle) {
 	/* Initialize the library */
@@ -64,6 +66,9 @@ void Screen::InitializeAndLaunch() {
 
 	Controller *controller = new Controller();
 	controller->SetCallback(window);
+
+	windowAlgo = new Window();
+	figureToDraw.push_back(windowAlgo);
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))

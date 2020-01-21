@@ -3,4 +3,6 @@
 
 PremierProjet/x64/
 
-x64/
+x64/Debug/*.pdb
+x64/Debug/*.ilk
+x64/Debug/*.exe
