@@ -157,6 +157,7 @@
     <ClInclude Include="class\header\Polygon.h" />
     <ClInclude Include="class\header\Screen.h" />
     <ClInclude Include="class\header\Segment.h" />
+    <ClInclude Include="class\header\Utils.h" />
     <ClInclude Include="class\header\Window.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -168,6 +169,7 @@
     <ClCompile Include="class\lib\Polygon.cpp" />
     <ClCompile Include="class\lib\Screen.cpp" />
     <ClCompile Include="class\lib\Segment.cpp" />
+    <ClCompile Include="class\lib\Utils.cpp" />
     <ClCompile Include="class\lib\Window.cpp" />
     <ClCompile Include="PremierProjet.cpp" />
     <ClCompile Include="stdafx.cpp">

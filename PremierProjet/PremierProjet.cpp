@@ -35,9 +35,11 @@
 
 #include "class/header/Screen.h"
 
+Screen* principalScreen;
+
 int main(void)
 {
-	Screen* principalScreen = new Screen(640, 480, "Hello World");
+	principalScreen = new Screen(640, 480, "Hello World");
 
 	principalScreen->InitializeAndLaunch();
 

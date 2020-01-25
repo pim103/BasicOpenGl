@@ -1,4 +1,4 @@
-#include "../../class/header/Segment.h"
+#include "../../class/header/Window.h"
 #include <vector>
 
 #include <math.h>
@@ -7,29 +7,41 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+extern Window* windowAlgo;
+
 Segment::Segment(float xA, float yA, float xB, float yB) {
 	firstPoint = new Point(xA, yA);
 	secondPoint = new Point(xB, yB);
+
+	ClassicInit();
 }
 
 Segment::Segment(Point* a, Point* b) {
 	firstPoint = a;
 	secondPoint = b;
+
+	ClassicInit();
 }
 
 Segment::Segment(Point* a, float xB, float yB) {
 	firstPoint = a;
 	secondPoint = new Point(xB, yB);
+
+	ClassicInit();
 }
 
 Segment::Segment(float xA, float yA, Point* b) {
 	firstPoint = new Point(xA, yA);
 	secondPoint = b;
+
+	ClassicInit();
 }
 
 void Segment::ClassicInit() {
+	//Basic Color
 	SetColor(1.0, 1.0, 1.0);
 
+	//Calcul Normale
 	float vecX = secondPoint->getX() - firstPoint->getX();
 	float vecY = secondPoint->getY() - firstPoint->getY();
 
@@ -39,6 +51,9 @@ void Segment::ClassicInit() {
 
 	normaleX = -normY;
 	normaleY = normX;
+
+	//Is for a window
+	isWindowSegment = false;
 }
 
 float* Segment::GetColors() {
@@ -64,10 +79,19 @@ void Segment::SetColor(float *colors) {
 
 void Segment::DrawFigure() {
 	glColor3f(red, green, blue);
+	glLineWidth(2);
 
-	glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), GetCoord());
-	glEnableVertexAttribArray(0);
-	glDrawArrays(GL_LINES, 0, 2);
+	float* coords = GetCoord();
+
+	if (windowAlgo->CheckIfIsActive() && !GetIsWindowSegment()) {
+		coords = windowAlgo->ApplyScreen(this);
+	}
+
+	if (coords != nullptr) {
+		glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), coords);
+		glEnableVertexAttribArray(0);
+		glDrawArrays(GL_LINES, 0, 2);
+	}
 
 	glColor3f(1.0, 1.0, 1.0);
 }
@@ -88,4 +112,20 @@ float* Segment::GetCoord() {
 	coord[3] = secondPoint->getY();
 
 	return coord;
+}
+
+float* Segment::GetNormale() {
+	float* normales = new float[2];
+	normales[0] = normaleX;
+	normales[1] = normaleY;
+
+	return normales;
+}
+
+bool Segment::GetIsWindowSegment() {
+	return isWindowSegment;
+}
+
+void Segment::SetIsWindowSegment(bool toggle) {
+	isWindowSegment = toggle;
 }

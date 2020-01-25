@@ -21,6 +21,7 @@ void Polygon::ClosePolygon() {
 
 		Segment * newSeg = new Segment(firstPoint, lastPoint);
 		newSeg->SetColor(segments[0]->GetColors());
+		newSeg->SetIsWindowSegment(segments[0]->GetIsWindowSegment());
 
 		segments.push_back(newSeg);
 	}
@@ -32,4 +33,9 @@ bool Polygon::CheckValidPolygon() {
 	}
 
 	return false;
+}
+
+
+vector<Segment *> Polygon::GetSegments() {
+	return segments;
 }

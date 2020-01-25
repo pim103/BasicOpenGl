@@ -2,6 +2,7 @@
 #include "../../class/header/Screen.h"
 #include "../../class/header/Polygon.h"
 #include "../../class/header/Window.h"
+#include "../../class/header/Utils.h"
 
 extern vector<Figure*> figureToDraw;
 ControllerType controllerType;
@@ -19,16 +20,24 @@ Controller::Controller() {
 void Controller::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	double x = 0;
 	double y = 0;
-	int height = 0;
-	int width = 0;
+	double* newCoord;
+	double* origCoord = new double[2];
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-		glfwGetWindowSize(window, &width, &height);
 		glfwGetCursorPos(window, &x, &y);
-		x = (x / width) * 2 - 1;
-		y = ((y / height) * 2 - 1) * -1;
 
-		if (newXa == -2) {
+		origCoord[0] = x;
+		origCoord[1] = y;
+
+		newCoord = Utils::ConvertMouseClickCoord(window, x, y);
+
+		x = newCoord[0];
+		y = newCoord[1];
+
+		if (controllerType == ControllerType::COLOR_ZONE) {
+			Utils::ColorZone(window, origCoord);
+		}
+		else if (newXa == -2) {
 			newXa = x;
 			newYa = y;
 		}
@@ -41,6 +50,7 @@ void Controller::MouseButtonCallback(GLFWwindow* window, int button, int action,
 					Segment* newSeg = new Segment(newXa, newYa, x, y);
 					if (controllerType == ControllerType::DRAW_WINDOW) {
 						newSeg->SetColor(0.0, 0.0, 1.0);
+						newSeg->SetIsWindowSegment(true);
 					}
 					else if (controllerType == ControllerType::DRAW_POLYGON) {
 						newSeg->SetColor(0.0, 1.0, 0.0);
@@ -56,12 +66,14 @@ void Controller::MouseButtonCallback(GLFWwindow* window, int button, int action,
 						figureToDraw.push_back(newPolygon);
 					}
 					else if (controllerType == ControllerType::DRAW_WINDOW) {
+						windowAlgo->RemovePolygon();
 						windowAlgo->SetPolygon(newPolygon);
 					}
 
 					Segment* newSeg = new Segment(newXa, newYa, x, y);
 					if (controllerType == ControllerType::DRAW_WINDOW) {
 						newSeg->SetColor(0.0, 0.0, 1.0);
+						newSeg->SetIsWindowSegment(true);
 					}
 					else if (controllerType == ControllerType::DRAW_POLYGON) {
 						newSeg->SetColor(0.0, 1.0, 0.0);
@@ -108,6 +120,11 @@ void Controller::KeyboardCallback(GLFWwindow* window, int key, int scancode, int
 			cout << "Close Polygon" << endl;
 			SwitchMode();
 			break;
+		case GLFW_KEY_D:
+			cout << "Color Mode" << endl;
+			SwitchMode();
+			controllerType = ControllerType::COLOR_ZONE;
+			break;
 		default:
 			break;
 		}
@@ -131,6 +148,9 @@ void Controller::SwitchMode() {
 			newPolygon->ClosePolygon();
 			if (!newPolygon->CheckValidPolygon()) {
 				windowAlgo->RemovePolygon();
+			}
+			else {
+				windowAlgo->SetActive(true);
 			}
 		}
 

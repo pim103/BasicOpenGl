@@ -69,6 +69,33 @@ void Screen::InitializeAndLaunch() {
 
 	windowAlgo = new Window();
 	figureToDraw.push_back(windowAlgo);
+	/*
+	Polygon* poly = new Polygon();
+	
+	Segment* seg = new Segment(-0.7, 0.7, 0.7, 0.7);
+	seg->SetIsWindowSegment(true);
+	seg->SetColor(0.0, 1.0, 1.0);
+	poly->AddSegment(seg);
+	
+	seg = new Segment(0.7, 0.7, 0.7, -0.7);
+	seg->SetIsWindowSegment(true);
+	seg->SetColor(0.0, 1.0, 1.0);
+	poly->AddSegment(seg);
+
+	seg = new Segment(0.7, -0.7, -0.7, -0.7);
+	seg->SetIsWindowSegment(true);
+	seg->SetColor(0.0, 1.0, 1.0);
+	poly->AddSegment(seg);
+
+	poly->ClosePolygon();
+
+	windowAlgo->SetPolygon(poly);
+	windowAlgo->SetActive(true);
+	//figureToDraw.push_back(new Segment(0.5, 0.5, -0.5, -0.5));
+	Segment* seg = new Segment(-1, 1, 1, -1);
+	seg->SetColor(1.0, 0.0, 1.0);
+	figureToDraw.push_back(seg);
+	*/
 
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))

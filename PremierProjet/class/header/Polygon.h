@@ -13,4 +13,6 @@ public:
 	void ClosePolygon();
 
 	bool CheckValidPolygon();
+
+	vector<Segment*> GetSegments();
 };

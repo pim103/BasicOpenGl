@@ -11,6 +11,8 @@ private:
 	double normaleX;
 	double normaleY;
 
+	bool isWindowSegment;
+
 	float red;
 	float green;
 	float blue;
@@ -32,4 +34,8 @@ public:
 	void DrawFigure();
 
 	float* GetCoord();
+	float* GetNormale();
+
+	bool GetIsWindowSegment();
+	void SetIsWindowSegment(bool toggle);
 };
