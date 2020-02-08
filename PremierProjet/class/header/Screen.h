@@ -16,6 +16,8 @@ private:
 public:
 	Screen(int width, int height, string windowTitle);
 	
+	GLFWwindow* getWindow();
+
 	void Initialize();
 	void Display();
 	void Shutdown();

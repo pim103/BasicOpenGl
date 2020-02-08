@@ -14,6 +14,9 @@ using namespace std;
 class Utils {
 public:
 	double static *ConvertMouseClickCoord(GLFWwindow* window, double x, double y);
+	double static* ConverOpenGlToMouseClickCoord(GLFWwindow* window, double x, double y);
+
+	
 	float static* GetColorOfPixel(GLFWwindow* window, double x, double y);
 
 	void static ColorZone(GLFWwindow* window, double* coords);

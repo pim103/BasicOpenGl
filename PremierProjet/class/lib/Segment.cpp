@@ -83,9 +83,9 @@ void Segment::DrawFigure() {
 
 	float* coords = GetCoord();
 
-	if (windowAlgo->CheckIfIsActive() && !GetIsWindowSegment()) {
-		coords = windowAlgo->ApplyScreen(this);
-	}
+	/*if (windowAlgo->CheckIfIsActive() && !GetIsWindowSegment()) {
+		coords = windowAlgo->ApplyScreenShuterlandHodgman(this);
+	}*/
 
 	if (coords != nullptr) {
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), coords);

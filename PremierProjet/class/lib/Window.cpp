@@ -1,6 +1,8 @@
 #include "../../class/header/Screen.h"
 #include "../../class/header/Window.h"
+#include "../../class/header/Utils.h"
 
+using namespace std;
 
 Window::Window() {
 	isActive = false;
@@ -8,6 +10,7 @@ Window::Window() {
 
 void Window::SetPolygon(Polygon* nPolygon) {
 	polygon = nPolygon;
+	polygon->SetIsWindowPoly(true);
 }
 
 void Window::RemovePolygon() {
@@ -26,24 +29,7 @@ void Window::SetActive(bool toggle) {
 }
 
 bool Window::CheckIfIsActive() {
-	return polygon != nullptr & isActive;
-}
-
-vector<Point *> Window::GetAllPoint() {
-	vector<Point*> allPoints;
-	vector<Segment*> windowSegs = polygon->GetSegments();
-
-	for (int i = 0; i < windowSegs.size() - 1; i++) {
-		if (i == 0) {
-			allPoints.push_back(windowSegs[i]->getFirstPoint());
-			allPoints.push_back(windowSegs[i]->getSecondPoint());
-		}
-		else {
-			allPoints.push_back(windowSegs[i]->getSecondPoint());
-		}
-	}
-
-	return allPoints;
+	return (polygon != nullptr) & isActive;
 }
 
 vector<float*> Window::GetAllNormale() {
@@ -62,7 +48,7 @@ float* Window::ApplyScreen(Segment *seg) {
 	vector<Segment*> windowSegs = polygon->GetSegments();
 	int segsSize = windowSegs.size();
 
-	vector<Point*> allPoints = GetAllPoint();
+	vector<Point*> allPoints = this->polygon->GetAllPoint();
 	vector<float*> allNormale = GetAllNormale();
 
 	Point* A = seg->getFirstPoint();
@@ -243,3 +229,154 @@ float* Window::ApplyScreen(Segment* seg) {
 
 	return coord;
 }*/
+
+// calculate intersection point
+Point* intersection(Point *point1, Point* point2, Point* point3, Point* point4)
+{
+	float x1 = point1->getX();
+	float y1 = point1->getY();
+	float x2 = point2->getX();
+	float y2 = point2->getY();
+	float x3 = point3->getX();
+	float y3 = point3->getY();
+	float x4 = point4->getX();
+	float y4 = point4->getY();
+
+	float* dc = new float[2];
+	float* dp = new float[2];
+
+	dc[0] = x1 - x2;
+	dc[1] = y1 - y2;
+
+	dp[0] = x3 - x4;
+	dp[1] = y3 - y4;
+
+	float n1 = x1 * y2 - y1 * x2;
+	float n2 = x3 * y4 - y3 * x4;
+	float n3 = 1.0 / (dc[0] * dp[1] - dc[1] * dp[0]);
+
+	Point* intersectionPoint = new Point((n1 * dp[0] - n2 * dc[0]) * n3, (n1 * dp[1] - n2 * dc[1]) * n3);
+	return intersectionPoint;
+}
+
+bool inside(Point *point1, Point* point2, Point *point, bool wasReversed) {
+	float x = point->getX();
+	float y = point->getY();
+
+	float x1 = point1->getX();
+	float y1 = point1->getY();
+	float x2 = point2->getX();
+	float y2 = point2->getY();
+
+	double* coords = new double[2];
+	coords = Utils::ConverOpenGlToMouseClickCoord(nullptr, x, y);
+
+	double* coords1 = new double[2];
+	coords1 = Utils::ConverOpenGlToMouseClickCoord(nullptr, x1, y1);
+
+	double* coords2 = new double[2];
+	coords2 = Utils::ConverOpenGlToMouseClickCoord(nullptr, x2, y2);
+
+	double val = (coords2[1] - coords1[1]) * coords[0] + (coords1[0] - coords2[0]) * coords[1] + (coords2[0] * coords1[1] - coords1[0] * coords2[1]);
+
+	if (wasReversed) {
+		return val > 0;
+	}
+	else {
+		return val < 0;
+	}
+
+}
+
+void Window::ApplyScreenShuterlandHodgman(Polygon* poly) {
+	int counter = 0;
+
+	//TODO REBASE ALL COORD TO 0 - 2 And not to -1 - 1 
+	vector<Point*> subjectPoints = poly->GetAllPoint();
+	vector<Point*> windowPoints = polygon->GetAllPoint();
+
+	vector<Point*> newPolyPoints;
+	vector<Point*> inputPoints;
+
+	int subjectSize = subjectPoints.size();
+	int windowSize = windowPoints.size();
+
+	Point* cp1;
+	Point* cp2;
+	Point* s;
+	Point* e;
+
+	bool insideE, insideS;
+
+	bool wasReversed = false;
+	bool isEnd = false;
+
+	while (!isEnd) {
+		subjectSize = subjectPoints.size();
+		windowSize = windowPoints.size();
+		newPolyPoints.clear();
+		inputPoints.clear();
+		newPolyPoints.resize(99);
+		inputPoints.resize(99);
+
+		for (int i = 0; i < subjectSize; i++) {
+			newPolyPoints[i] = subjectPoints[i];
+		}
+		for (int i = 0; i < windowSize; i++) {
+			for (int j = 0; j < subjectSize; j++) {
+				inputPoints[j] = newPolyPoints[j];
+			}
+
+			counter = 0;
+			cp1 = windowPoints[i];
+			cp2 = windowPoints[(i + 1) % windowSize];
+
+			for (int j = 0; j < subjectSize; j++) {
+				s = inputPoints[j];
+				e = inputPoints[(j + 1) % subjectSize];
+
+				insideE = inside(cp1, cp2, e, wasReversed);
+				insideS = inside(cp1, cp2, s, wasReversed);
+
+				if (insideS && insideE) {
+					newPolyPoints[counter] = e;
+					counter++;
+				}
+				else if (!insideS && insideE) {
+					newPolyPoints[counter] = intersection(cp1, cp2, s, e);
+					counter++;
+					newPolyPoints[counter] = e;
+					counter++;
+				}
+				else if (insideS && !insideE) {
+					newPolyPoints[counter] = intersection(cp1, cp2, s, e);
+					counter++;
+				}
+			}
+
+			subjectSize = counter;
+		}
+
+		if (!wasReversed && counter < 1) {
+			wasReversed = true;
+		}
+		else {
+			isEnd = true;
+		}
+	}
+
+	if (counter > 0) {
+		Segment* seg = nullptr;
+		float* color = poly->GetColor();
+
+		for (int i = 0; i < counter - 1; i++) {
+			seg = new Segment(newPolyPoints[i], newPolyPoints[i + 1]);
+			seg->SetColor(color);
+			seg->DrawFigure();
+		}
+
+		seg = new Segment(newPolyPoints[counter - 1], newPolyPoints[0]);
+		seg->SetColor(color);
+		seg->DrawFigure();
+	}
+}

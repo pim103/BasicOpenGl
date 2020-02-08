@@ -8,9 +8,28 @@ double* Utils::ConvertMouseClickCoord(GLFWwindow *window, double x, double y) {
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
 
+	width = 640;
+	height = 480;
 	x = (x / width) * 2 - 1;
 	y = ((y / height) * 2 - 1) * -1;
 	
+	double* coords = new double[2];
+
+	coords[0] = x;
+	coords[1] = y;
+
+	return coords;
+}
+
+double* Utils::ConverOpenGlToMouseClickCoord(GLFWwindow* window, double x, double y) {
+	int width, height;
+	//glfwGetWindowSize(window, &width, &height);
+
+	width = 640;
+	height = 480;
+	x = ((x + 1) * width) / 2;
+	y =  ((y * -1 + 1) / 2) * height;
+
 	double* coords = new double[2];
 
 	coords[0] = x;

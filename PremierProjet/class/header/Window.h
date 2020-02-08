@@ -1,14 +1,8 @@
 #pragma once
 #include "Polygon.h"
 
-typedef struct segmentCode segmentCode;
-struct segmentCode {
-	int sum;
-	int left;
-	int right;
-	int up;
-	int down;
-};
+bool inside(Point* point1, Point* point2, Point* point);
+Point* intersection(Point* point1, Point* point2, Point* point3, Point* point4);
 
 class Window: public Figure {
 private:
@@ -22,8 +16,8 @@ public:
 	bool CheckIfIsActive();
 	void SetActive(bool toggle);
 
-	vector<Point*> GetAllPoint();
 	vector<float*> Window::GetAllNormale();
 
 	float* ApplyScreen(Segment *seg);
+	void ApplyScreenShuterlandHodgman(Polygon* poly);
 };
