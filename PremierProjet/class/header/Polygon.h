@@ -8,7 +8,10 @@ class Polygon: public Figure {
 private:
 	vector<Segment *> segments;
 	bool isWindow;
+	bool isFill;
 public:
+	Polygon();
+
 	void AddSegment(Segment *seg);
 	void DrawFigure();
 	void ClosePolygon();
@@ -21,4 +24,9 @@ public:
 	float* GetColor();
 	bool GetIsWindowPoly();
 	void SetIsWindowPoly(bool toggle);
+
+	bool GetIsFill();
+	void SetIsFill(bool toggle);
+
+	Polygon* getPoly();
 };

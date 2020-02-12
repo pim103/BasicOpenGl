@@ -2,17 +2,30 @@
 #include "../../class/header/Screen.h"
 #include "../../class/header/Window.h"
 
-extern Window* windowAlgo;
+extern vector<Window*> windows;
+
+Polygon::Polygon() {
+	type = TypeFigure::POLYGON;
+}
 
 void Polygon::AddSegment(Segment* seg) {
 	segments.push_back(seg);
 }
 
 void Polygon::DrawFigure() {
-	if (windowAlgo->CheckIfIsActive() && !GetIsWindowPoly()) {
-		windowAlgo->ApplyScreenShuterlandHodgman(this);
+	bool findWindowActive = false;
+
+	if (!GetIsWindowPoly()) {
+		for each (Window * window in windows)
+		{
+			if (window->CheckIfIsActive()) {
+				findWindowActive = true;
+				window->ApplyScreenShuterlandHodgman(this);
+			}
+		}
 	}
-	else {
+
+	if (!findWindowActive) {
 		for each (Segment * seg in segments)
 		{
 			seg->DrawFigure();
@@ -76,4 +89,16 @@ void Polygon::SetIsWindowPoly(bool toggle) {
 
 float* Polygon::GetColor() {
 	return segments[0]->GetColors();
+}
+
+Polygon* Polygon::getPoly() {
+	return this;
+}
+
+bool Polygon::GetIsFill() {
+	return isFill;
+}
+
+void Polygon::SetIsFill(bool toggle) {
+	isFill = toggle;
 }

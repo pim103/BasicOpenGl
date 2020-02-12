@@ -7,7 +7,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-extern Window* windowAlgo;
+extern vector<Window*> windows;
 
 Segment::Segment(float xA, float yA, float xB, float yB) {
 	firstPoint = new Point(xA, yA);
@@ -38,6 +38,8 @@ Segment::Segment(float xA, float yA, Point* b) {
 }
 
 void Segment::ClassicInit() {
+	type = TypeFigure::SEGMENT;
+	
 	//Basic Color
 	SetColor(1.0, 1.0, 1.0);
 
@@ -83,15 +85,33 @@ void Segment::DrawFigure() {
 
 	float* coords = GetCoord();
 
-	/*if (windowAlgo->CheckIfIsActive() && !GetIsWindowSegment()) {
-		coords = windowAlgo->ApplyScreenShuterlandHodgman(this);
-	}*/
+	bool findWindowActive = false;
 
-	if (coords != nullptr) {
-		glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), coords);
-		glEnableVertexAttribArray(0);
-		glDrawArrays(GL_LINES, 0, 2);
+	if (!GetIsWindowSegment()) {
+		for each (Window * window in windows)
+		{
+			if (window->CheckIfIsActive()) {
+				findWindowActive = true;
+				window->ApplyScreenShuterlandHodgman(this);
+			}
+		}
 	}
+
+	if (!findWindowActive) {
+		ForcedDrawFigure();
+	}
+
+	glColor3f(1.0, 1.0, 1.0);
+}
+
+void Segment::ForcedDrawFigure() {
+	glColor3f(red, green, blue);
+	glLineWidth(2);
+
+	float* coords = GetCoord();
+	glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * sizeof(float), coords);
+	glEnableVertexAttribArray(0);
+	glDrawArrays(GL_LINES, 0, 2);
 
 	glColor3f(1.0, 1.0, 1.0);
 }

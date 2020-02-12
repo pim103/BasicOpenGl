@@ -10,6 +10,9 @@ private:
 	float x;
 	float y;
 
+	int origCoordX;
+	int origCoordY;
+
 	float r;
 	float g;
 	float b;

@@ -3,15 +3,20 @@
 #include "../../class/header/Polygon.h"
 #include "../../class/header/Window.h"
 #include "../../class/header/Utils.h"
+#include "../../class/header/Fill.h"
 
 extern vector<Figure*> figureToDraw;
 ControllerType controllerType;
 
-extern Window* windowAlgo;
+extern vector<Window*> windows;
 Polygon* newPolygon = nullptr;
+
+extern vector<Polygon*> polygon;
 
 float newXa = -2;
 float newYa = -2;
+
+bool currentStateOfWindow = false;
 
 Controller::Controller() {
 	controllerType = ControllerType::DRAW_SEGMENT;
@@ -22,6 +27,7 @@ void Controller::MouseButtonCallback(GLFWwindow* window, int button, int action,
 	double y = 0;
 	double* newCoord;
 	double* origCoord = new double[2];
+	Segment* newSeg;
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
 		glfwGetCursorPos(window, &x, &y);
@@ -35,7 +41,22 @@ void Controller::MouseButtonCallback(GLFWwindow* window, int button, int action,
 		y = newCoord[1];
 
 		if (controllerType == ControllerType::COLOR_ZONE) {
-			Utils::ColorZone(window, origCoord);
+			float* polyColor = new float[3];
+			polyColor[0] = 0;
+			polyColor[1] = 1;
+			polyColor[2] = 0;
+
+			for each (Polygon * poly in polygon)
+			{
+				if (Utils::checkIfPointIsInPolygon(window, origCoord[0], origCoord[1], poly)) {
+					if (!poly->GetIsFill()) {
+						Fill::LCA(window, poly);
+					}
+				}
+			}
+			/*if (Utils::checkIfPointIsInPolygon(window, origCoord[0], origCoord[1], polyColor)) {
+				Fill::ColorZone(window, origCoord);
+			}*/
 		}
 		else if (newXa == -2) {
 			newXa = x;
@@ -47,7 +68,7 @@ void Controller::MouseButtonCallback(GLFWwindow* window, int button, int action,
 			case ControllerType::DRAW_WINDOW:
 			case ControllerType::DRAW_POLYGON:
 				if (newPolygon != nullptr) {
-					Segment* newSeg = new Segment(newXa, newYa, x, y);
+					newSeg = new Segment(newXa, newYa, x, y);
 					if (controllerType == ControllerType::DRAW_WINDOW) {
 						newSeg->SetColor(0.0, 0.0, 1.0);
 						newSeg->SetIsWindowSegment(true);
@@ -64,13 +85,13 @@ void Controller::MouseButtonCallback(GLFWwindow* window, int button, int action,
 					newPolygon = new Polygon();
 					if (controllerType == ControllerType::DRAW_POLYGON) {
 						figureToDraw.push_back(newPolygon);
+						polygon.push_back(newPolygon);
 					}
 					else if (controllerType == ControllerType::DRAW_WINDOW) {
-						windowAlgo->RemovePolygon();
-						windowAlgo->SetPolygon(newPolygon);
+						figureToDraw.push_back(newPolygon);
 					}
 
-					Segment* newSeg = new Segment(newXa, newYa, x, y);
+					newSeg = new Segment(newXa, newYa, x, y);
 					if (controllerType == ControllerType::DRAW_WINDOW) {
 						newSeg->SetColor(0.0, 0.0, 1.0);
 						newSeg->SetIsWindowSegment(true);
@@ -85,10 +106,15 @@ void Controller::MouseButtonCallback(GLFWwindow* window, int button, int action,
 				}
 				break;
 			case ControllerType::DRAW_SEGMENT:
-				Segment* newSeg = new Segment(newXa, newYa, x, y);
+				newSeg = new Segment(newXa, newYa, x, y);
 				newSeg->SetColor(1.0, 0.0, 0.0);
 
 				figureToDraw.push_back(newSeg);
+				newXa = -2;
+				newYa = -2;
+				break;
+			case ControllerType::DRAW_CIRCLE:
+				Utils::DrawCircle(window, x, y, newXa, newYa);
 				newXa = -2;
 				newYa = -2;
 				break;
@@ -111,19 +137,37 @@ void Controller::KeyboardCallback(GLFWwindow* window, int key, int scancode, int
 			SwitchMode();
 			controllerType = ControllerType::DRAW_SEGMENT;
 			break;
-		case GLFW_KEY_F:
+		case GLFW_KEY_W:
 			cout << "Window mode" << endl;
 			SwitchMode();
 			controllerType = ControllerType::DRAW_WINDOW;
 			break;
-		case GLFW_KEY_C:
-			cout << "Close Polygon" << endl;
+		case GLFW_KEY_E:
+			cout << "End Polygon" << endl;
 			SwitchMode();
 			break;
-		case GLFW_KEY_D:
-			cout << "Color Mode" << endl;
+		case GLFW_KEY_F:
+			cout << "Paint Mode" << endl;
 			SwitchMode();
 			controllerType = ControllerType::COLOR_ZONE;
+			break;
+		case GLFW_KEY_R:
+			cout << "RESET" << endl;
+			controllerType = ControllerType::DRAW_SEGMENT;
+			figureToDraw.clear();
+			windows.clear();
+			polygon.clear();
+		case GLFW_KEY_C:
+			cout << "Circle Mode" << endl;
+			SwitchMode();
+			controllerType = ControllerType::DRAW_CIRCLE;
+			break;
+		case GLFW_KEY_T:
+			currentStateOfWindow = !currentStateOfWindow;
+			for each (Window* window in windows)
+			{
+				window->SetActive(currentStateOfWindow);
+			}
 			break;
 		default:
 			break;
@@ -146,11 +190,14 @@ void Controller::SwitchMode() {
 	case ControllerType::DRAW_WINDOW:
 		if (newPolygon != nullptr) {
 			newPolygon->ClosePolygon();
-			if (!newPolygon->CheckValidPolygon()) {
-				windowAlgo->RemovePolygon();
-			}
-			else {
-				windowAlgo->SetActive(true);
+			if (newPolygon->CheckValidPolygon()) {
+				figureToDraw.pop_back();
+				Window* newWindow = new Window();
+				newWindow->SetPolygon(newPolygon);
+				newWindow->SetActive(currentStateOfWindow);
+
+				windows.push_back(newWindow);
+				figureToDraw.push_back(newWindow);
 			}
 		}
 

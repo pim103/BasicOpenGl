@@ -9,7 +9,8 @@ using namespace std;
 #include "../header/Utils.h"
 
 vector<Figure*> figureToDraw;
-Window* windowAlgo;
+vector<Window*> windows;
+vector<Polygon*> polygon;
 
 extern Screen* principalScreen;
 
@@ -40,8 +41,8 @@ void Screen::Initialize() {
 		std::cout << "erreur d'initialisation de GLEW!"
 			<< std::endl;
 	}
-	/*
-	Polygon* poly = new Polygon();
+	
+	/*Polygon* poly = new Polygon();
 	
 	Segment* seg = new Segment(0.7, 0.7, -0.7, 0.7);
 	seg->SetIsWindowSegment(true);
@@ -57,10 +58,15 @@ void Screen::Initialize() {
 	seg->SetIsWindowSegment(true);
 	seg->SetColor(0.0, 1.0, 1.0);
 	poly->AddSegment(seg);
-
+	
 	poly->ClosePolygon();
+	figureToDraw.push_back(poly);
+	polygon.push_back(poly);
+
+	double* coords = Utils::ConvertMouseClickCoord(window, 96, 72);
+	double* coords2 = Utils::ConvertMouseClickCoord(window, 544, 408);
+	figureToDraw.push_back(new Segment(coords[0], coords[1], coords2[0], coords2[1]));
 	*/
-	//figureToDraw.push_back(new Segment(0.5, 0.5, -0.5, -0.5));
 	/*
 	double* coords = Utils::ConvertMouseClickCoord(window, 50, 150);
 	double* coords2 = Utils::ConvertMouseClickCoord(window, 200, 50);
@@ -108,8 +114,7 @@ void Screen::Initialize() {
 
 	figureToDraw.push_back(poly);
 	*/
-	windowAlgo = new Window();
-	figureToDraw.push_back(windowAlgo);
+
 	/*
 	poly = new Polygon();
 	coords = Utils::ConvertMouseClickCoord(window, 100, 100);

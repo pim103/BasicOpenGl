@@ -32,6 +32,7 @@ public:
 	void SetColor(float* colors);
 
 	void DrawFigure();
+	void ForcedDrawFigure();
 
 	float* GetCoord();
 	float* GetNormale();

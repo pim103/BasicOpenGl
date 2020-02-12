@@ -2,7 +2,6 @@
 #include "../../class/header/Utils.h"
 
 extern vector<Figure*> figureToDraw;
-extern Screen* principalScreen;
 
 double* Utils::ConvertMouseClickCoord(GLFWwindow *window, double x, double y) {
 	int width, height;
@@ -53,7 +52,7 @@ float* Utils::GetColorOfPixel(GLFWwindow* window, double x, double y) {
 	return color;
 }
 
-bool checkIfAlreadyInPile(vector<double*> pile, double* coords) {
+bool Utils::checkIfAlreadyInPile(vector<double*> pile, double* coords) {
 	for each (double* coordsInPile in pile)
 	{
 		if (coordsInPile[0] == coords[0] && coordsInPile[1] == coords[1]) {
@@ -64,116 +63,262 @@ bool checkIfAlreadyInPile(vector<double*> pile, double* coords) {
 	return false;
 }
 
-void Utils::ColorZone(GLFWwindow* window, double* coords) {
-	float* polygonColor = new float[3];
-	polygonColor[0] = 0;
-	polygonColor[1] = 1;
-	polygonColor[2] = 0;
-
-	float* fillColor = new float[3];
-	fillColor[0] = 1;
-	fillColor[1] = 0;
-	fillColor[2] = 1;
-
-	float* segmentColor = new float[3];
-	segmentColor[0] = 1;
-	segmentColor[1] = 0;
-	segmentColor[2] = 0;
-
+bool Utils::checkIfPointIsInPolygon(GLFWwindow* window, double x, double y, float* color) {
 	int width, height;
-	glfwGetWindowSize(window, &width, &height);
-
-	double x = coords[0];
-	double y = coords[1];
 
 	float* currentPixel;
 
-	vector<double*> pile;
-	vector<double*> alreadyParsed;
-	pile.push_back(coords);
+	glfwGetWindowSize(window, &width, &height);
 
-	while (size(pile) > 0) {
-		x = pile[0][0];
-		y = pile[0][1];
-		pile.erase(pile.begin());
+	float* lastColor = nullptr;
+	int nbIntersection = 0;
 
-		/*double* ccoord = new double[2];
-		ccoord[0] = x;
-		ccoord[1] = y;
-		alreadyParsed.push_back(ccoord);
-		*/
+	while (x < width) {
 		currentPixel = Utils::GetColorOfPixel(window, x, y);
 
-		if ( (currentPixel[0] != polygonColor[0] || currentPixel[1] != polygonColor[1] || currentPixel[2] != polygonColor[2]) &&
-			(currentPixel[0] != fillColor[0] || currentPixel[1] != fillColor[1] || currentPixel[2] != fillColor[2]) ) {
-			double* newCoord = Utils::ConvertMouseClickCoord(window, x, y);
-			Point* p = new Point(newCoord[0], newCoord[1]);
-			p->SetColor(fillColor);
-
-			figureToDraw.push_back(p);
-		}
-
-		if (y - 1 >= 0) {
-			currentPixel = Utils::GetColorOfPixel(window, x, y - 1);
-			if (!(currentPixel[0] == polygonColor[0] && currentPixel[1] == polygonColor[1] && currentPixel[2] == polygonColor[2]) &&
-				!(currentPixel[0] == fillColor[0] && currentPixel[1] == fillColor[1] && currentPixel[2] == fillColor[2]) &&
-				!(currentPixel[0] == segmentColor[0] && currentPixel[1] == segmentColor[1] && currentPixel[2] == segmentColor[2])) {
-				double * newCoords = new double[2];
-				newCoords[0] = x;
-				newCoords[1] = y - 1;
-
-				if (!checkIfAlreadyInPile(pile, newCoords)) {
-					pile.push_back(newCoords);
-				}
+		if (currentPixel[0] == color[0] && currentPixel[1] == color[1] && currentPixel[2] == color[2]) {
+			if (lastColor != nullptr && (lastColor[0] != currentPixel[0] || lastColor[1] != currentPixel[1] || lastColor[2] != currentPixel[2])) {
+				nbIntersection++;
 			}
 		}
 
-		if (x - 1 >= 0) {
-			currentPixel = Utils::GetColorOfPixel(window, x - 1, y);
-			if (!(currentPixel[0] == polygonColor[0] && currentPixel[1] == polygonColor[1] && currentPixel[2] == polygonColor[2]) &&
-				!(currentPixel[0] == fillColor[0] && currentPixel[1] == fillColor[1] && currentPixel[2] == fillColor[2]) &&
-				!(currentPixel[0] == segmentColor[0] && currentPixel[1] == segmentColor[1] && currentPixel[2] == segmentColor[2])) {
-				double* newCoords = new double[2];
-				newCoords[0] = x - 1;
-				newCoords[1] = y;
+		x++;
+		lastColor = currentPixel;
+	}
 
-				if (!checkIfAlreadyInPile(pile, newCoords)) {
-					pile.push_back(newCoords);
-				}
-			}
+	return (nbIntersection % 2 == 1);
+}
+
+Point* Utils::intersection(Point* point1, Point* point2, Point* point3, Point* point4)
+{
+	float x1 = point1->getX();
+	float y1 = point1->getY();
+	float x2 = point2->getX();
+	float y2 = point2->getY();
+	float x3 = point3->getX();
+	float y3 = point3->getY();
+	float x4 = point4->getX();
+	float y4 = point4->getY();
+
+	float* dc = new float[2];
+	float* dp = new float[2];
+
+	dc[0] = x1 - x2;
+	dc[1] = y1 - y2;
+
+	dp[0] = x3 - x4;
+	dp[1] = y3 - y4;
+
+	float n1 = x1 * y2 - y1 * x2;
+	float n2 = x3 * y4 - y3 * x4;
+	float n3 = 1.0 / (dc[0] * dp[1] - dc[1] * dp[0]);
+
+	Point * intersectionPoint = new Point((n1 * dp[0] - n2 * dc[0]) * n3, (n1 * dp[1] - n2 * dc[1]) * n3);
+	return intersectionPoint;
+}
+
+bool Utils::inside(Point * point1, Point * point2, Point * point, bool wasReversed) {
+	float x = point->getX();
+	float y = point->getY();
+
+	float x1 = point1->getX();
+	float y1 = point1->getY();
+	float x2 = point2->getX();
+	float y2 = point2->getY();
+
+	double* coords = new double[2];
+	coords = Utils::ConverOpenGlToMouseClickCoord(nullptr, x, y);
+
+	double* coords1 = new double[2];
+	coords1 = Utils::ConverOpenGlToMouseClickCoord(nullptr, x1, y1);
+
+	double* coords2 = new double[2];
+	coords2 = Utils::ConverOpenGlToMouseClickCoord(nullptr, x2, y2);
+
+	//double val = (coords2[1] - coords1[1]) * coords[0] + (coords1[0] - coords2[0]) * coords[1] + (coords2[0] * coords1[1] - coords1[0] * coords2[1]);
+	double val = (y2 - y1) * x + (x1 - x2) * y + (x2 * y1 - x1 * y2);
+
+	if (wasReversed) {
+		return val > 0;
+	}
+	else {
+		return val < 0;
+	}
+}
+
+bool Utils::checkIfIntersection(GLFWwindow* window, Point* point1, Point* point2, Point* point3, Point* point4) {
+	float x1 = point1->getX();
+	float y1 = point1->getY();
+	float x2 = point2->getX();
+	float y2 = point2->getY();
+
+	double* coords = Utils::ConverOpenGlToMouseClickCoord(window, point3->getX(), point3->getY());
+	float x3 = coords[0];
+	float y3 = coords[1];
+	
+	coords = Utils::ConverOpenGlToMouseClickCoord(window, point4->getX(), point4->getY());
+	float x4 = coords[0];
+	float y4 = coords[1];
+	
+	float* dc = new float[2];
+	float* dp = new float[2];
+
+	dc[0] = x1 - x2;
+	dc[1] = y1 - y2;
+
+	dp[0] = x3 - x4;
+	dp[1] = y3 - y4;
+
+	float n1 = x1 * y2 - y1 * x2;
+	float n2 = x3 * y4 - y3 * x4;
+	float n3 = 1.0 / (dc[0] * dp[1] - dc[1] * dp[0]);
+
+	float commonX = (n1 * dp[0] - n2 * dc[0]) * n3;
+	float commonY = (n1 * dp[1] - n2 * dc[1]) * n3;
+
+	if ((commonX >= x1 && commonX <= x2 || commonX >= x2 && commonX <= x1) &&
+		(commonX >= x3 && commonX <= x4 || commonX >= x4 && commonX <= x3) &&
+		(commonY >= y1 && commonY <= y2 || commonY >= y2 && commonY <= y1) &&
+		(commonY >= y3 && commonY <= y4 || commonY >= y4 && commonY <= y3)
+		) {
+		return true;
+	}
+
+	return false;
+}
+
+bool Utils::checkIfPointIsInPolygon(GLFWwindow* window, double x, double y, Polygon* poly) {
+	Point* point1 = new Point(x, y);
+	Point* point2 = new Point(640, y + 1);
+
+	vector<Point*> polyPoints = poly->GetAllPoint();
+
+	int polySize = polyPoints.size();
+	int nbIntersection = 0;
+
+	for (int i = 0; i < polySize; i++) {
+		if (Utils::checkIfIntersection(window, point1, point2, polyPoints[i], polyPoints[(i + 1) % polySize])) {
+			nbIntersection++;
+		}
+	}
+
+	return (nbIntersection % 2) == 1;
+}
+
+vector<int> Utils::GetXOnLine(GLFWwindow* window, Polygon* poly, double xMin, double xMax, double y) {
+	float* dc = new float[2];
+	float* dp = new float[2];
+
+	dc[0] = xMin - xMax;
+	dc[1] = y - y;
+
+	vector<Point*> polyPoints = poly->GetAllPoint();
+	int size = polyPoints.size();
+
+	vector<int> result;
+
+	for (int i = 0; i < size; i++) {
+		Point* point3 = polyPoints[i];
+		Point* point4 = polyPoints[(i + 1) % size];
+
+		double* coords = Utils::ConverOpenGlToMouseClickCoord(window, point3->getX(), point3->getY());
+		float x3 = coords[0];
+		float y3 = coords[1];
+
+		coords = Utils::ConverOpenGlToMouseClickCoord(window, point4->getX(), point4->getY());
+		float x4 = coords[0];
+		float y4 = coords[1];
+
+		dp[0] = x3 - x4;
+		dp[1] = y3 - y4;
+
+		float n1 = xMin * y - y * xMax;
+		float n2 = x3 * y4 - y3 * x4;
+		float n3 = 1.0 / (dc[0] * dp[1] - dc[1] * dp[0]);
+
+		float commonX = (n1 * dp[0] - n2 * dc[0]) * n3;
+		float commonY = (n1 * dp[1] - n2 * dc[1]) * n3;
+
+		if ((commonX >= xMin && commonX <= xMax || commonX >= xMax && commonX <= xMin) &&
+			(commonX >= x3 && commonX <= x4 || commonX >= x4 && commonX <= x3))
+		{
+			result.push_back(commonX);
+		}
+	}
+
+	return result;
+}
+
+
+void Utils::DrawCircle(GLFWwindow* window, double x1, double y1, double x2, double y2) {
+	double* centerOrig = Utils::ConverOpenGlToMouseClickCoord(window, x1, y1);
+	double* pointOnCircle = Utils::ConverOpenGlToMouseClickCoord(window, x2, y2);
+
+	x2 = centerOrig[0];
+	y2 = centerOrig[1];
+	x1 = pointOnCircle[0];
+	y1 = pointOnCircle[1];
+
+	int rayon = sqrt(pow((y2 - y1), 2) + pow((x2 - x1), 2));
+
+	float* color = new float[3];
+	color[0] = 0.0;
+	color[0] = 1.0;
+	color[0] = 1.0;
+
+	int x = 0;
+	int y = rayon;
+	int m = 5 - (4 * rayon);
+	Point* newPoint;
+	double* coords;
+
+	while (x <= y) {
+		coords = Utils::ConvertMouseClickCoord(window, x + x1, y + y1);
+		newPoint = new Point(coords[0], coords[1]);
+		newPoint->SetColor(color);
+		figureToDraw.push_back(newPoint);
+
+		coords = Utils::ConvertMouseClickCoord(window, y + x1, x + y1);
+		newPoint = new Point(coords[0], coords[1]);
+		newPoint->SetColor(color);
+		figureToDraw.push_back(newPoint);
+
+		coords = Utils::ConvertMouseClickCoord(window, -x + x1, y + y1);
+		newPoint = new Point(coords[0], coords[1]);
+		newPoint->SetColor(color);
+		figureToDraw.push_back(newPoint);
+
+		coords = Utils::ConvertMouseClickCoord(window, -y + x1, x + y1);
+		newPoint = new Point(coords[0], coords[1]);
+		newPoint->SetColor(color);
+		figureToDraw.push_back(newPoint);
+
+		coords = Utils::ConvertMouseClickCoord(window, x + x1, -y + y1);
+		newPoint = new Point(coords[0], coords[1]);
+		newPoint->SetColor(color);
+		figureToDraw.push_back(newPoint);
+
+		coords = Utils::ConvertMouseClickCoord(window, y + x1, -x + y1);
+		newPoint = new Point(coords[0], coords[1]);
+		newPoint->SetColor(color);
+		figureToDraw.push_back(newPoint);
+
+		coords = Utils::ConvertMouseClickCoord(window, -x + x1, -y + y1);
+		newPoint = new Point(coords[0], coords[1]);
+		newPoint->SetColor(color);
+		figureToDraw.push_back(newPoint);
+
+		coords = Utils::ConvertMouseClickCoord(window, -y + x1, -x + y1);
+		newPoint = new Point(coords[0], coords[1]);
+		newPoint->SetColor(color);
+		figureToDraw.push_back(newPoint);
+
+		if (m > 0) {
+			y--;
+			m -= (8 * y);
 		}
 
-		if (y + 1 < height) {
-			currentPixel = Utils::GetColorOfPixel(window, x, y + 1);
-			if (!(currentPixel[0] == polygonColor[0] && currentPixel[1] == polygonColor[1] && currentPixel[2] == polygonColor[2]) &&
-				!(currentPixel[0] == fillColor[0] && currentPixel[1] == fillColor[1] && currentPixel[2] == fillColor[2]) &&
-				!(currentPixel[0] == segmentColor[0] && currentPixel[1] == segmentColor[1] && currentPixel[2] == segmentColor[2])) {
-				double* newCoords = new double[2];
-				newCoords[0] = x;
-				newCoords[1] = y + 1;
-
-				if (!checkIfAlreadyInPile(pile, newCoords)) {
-					pile.push_back(newCoords);
-				}
-			}
-		}
-
-		if (x + 1 < width) {
-			currentPixel = Utils::GetColorOfPixel(window, x + 1, y);
-			if (!(currentPixel[0] == polygonColor[0] && currentPixel[1] == polygonColor[1] && currentPixel[2] == polygonColor[2]) &&
-				!(currentPixel[0] == fillColor[0] && currentPixel[1] == fillColor[1] && currentPixel[2] == fillColor[2]) &&
-				!(currentPixel[0] == segmentColor[0] && currentPixel[1] == segmentColor[1] && currentPixel[2] == segmentColor[2])) {
-				double* newCoords = new double[2];
-				newCoords[0] = x + 1;
-				newCoords[1] = y;
-
-				if (!checkIfAlreadyInPile(pile, newCoords)) {
-					pile.push_back(newCoords);
-				}
-			}
-		}
-
-		principalScreen->Display();
-		glfwSwapBuffers(window);
+		x++;
+		m += (8 * x) + 4;
 	}
 }

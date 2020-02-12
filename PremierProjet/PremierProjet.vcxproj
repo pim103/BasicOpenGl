@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="class\header\abstract\Figure.h" />
     <ClInclude Include="class\header\Controller.h" />
+    <ClInclude Include="class\header\Fill.h" />
     <ClInclude Include="class\header\Point.h" />
     <ClInclude Include="class\header\Polygon.h" />
     <ClInclude Include="class\header\Screen.h" />
@@ -165,6 +166,7 @@
   <ItemGroup>
     <ClCompile Include="class\lib\abstract\Figure.cpp" />
     <ClCompile Include="class\lib\Controller.cpp" />
+    <ClCompile Include="class\lib\Fill.cpp" />
     <ClCompile Include="class\lib\Point.cpp" />
     <ClCompile Include="class\lib\Polygon.cpp" />
     <ClCompile Include="class\lib\Screen.cpp" />
